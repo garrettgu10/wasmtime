@@ -647,6 +647,18 @@ pub fn translate_operator<FE: FuncEnvironment + ?Sized>(
         Operator::I32Load16S { memarg } => {
             translate_load(memarg, ir::Opcode::Sload16, I32, builder, state, environ)?;
         }
+        Operator::S32Load8U { memarg } => {
+            translate_load(memarg, ir::Opcode::Uload8, I32, builder, state, environ)?;
+        }
+        Operator::S32Load16U { memarg } => {
+            translate_load(memarg, ir::Opcode::Uload16, I32, builder, state, environ)?;
+        }
+        Operator::S32Load8S { memarg } => {
+            translate_load(memarg, ir::Opcode::Sload8, I32, builder, state, environ)?;
+        }
+        Operator::S32Load16S { memarg } => {
+            translate_load(memarg, ir::Opcode::Sload16, I32, builder, state, environ)?;
+        }
         Operator::I64Load8U { memarg } => {
             translate_load(memarg, ir::Opcode::Uload8, I64, builder, state, environ)?;
         }
@@ -657,6 +669,18 @@ pub fn translate_operator<FE: FuncEnvironment + ?Sized>(
             translate_load(memarg, ir::Opcode::Sload8, I64, builder, state, environ)?;
         }
         Operator::I64Load16S { memarg } => {
+            translate_load(memarg, ir::Opcode::Sload16, I64, builder, state, environ)?;
+        }
+        Operator::S64Load8U { memarg } => {
+            translate_load(memarg, ir::Opcode::Uload8, I64, builder, state, environ)?;
+        }
+        Operator::S64Load16U { memarg } => {
+            translate_load(memarg, ir::Opcode::Uload16, I64, builder, state, environ)?;
+        }
+        Operator::S64Load8S { memarg } => {
+            translate_load(memarg, ir::Opcode::Sload8, I64, builder, state, environ)?;
+        }
+        Operator::S64Load16S { memarg } => {
             translate_load(memarg, ir::Opcode::Sload16, I64, builder, state, environ)?;
         }
         Operator::I64Load32S { memarg } => {

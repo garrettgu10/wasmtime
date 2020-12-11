@@ -32,6 +32,10 @@ use wasmparser::{BinaryReaderError, FuncValidator, FunctionBody, Operator, WasmF
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "enable-serde", derive(Serialize, Deserialize))]
 pub enum WasmType {
+    /// ct-wasm S32 type
+    S32,
+    /// ct-wasm S64 type
+    S64,
     /// I32 type
     I32,
     /// I64 type
@@ -55,6 +59,8 @@ impl TryFrom<wasmparser::Type> for WasmType {
     fn try_from(ty: wasmparser::Type) -> Result<Self, Self::Error> {
         use wasmparser::Type::*;
         match ty {
+            S32 => Ok(WasmType::S32),
+            S64 => Ok(WasmType::S64),
             I32 => Ok(WasmType::I32),
             I64 => Ok(WasmType::I64),
             F32 => Ok(WasmType::F32),
@@ -74,6 +80,8 @@ impl TryFrom<wasmparser::Type> for WasmType {
 impl From<WasmType> for wasmparser::Type {
     fn from(ty: WasmType) -> wasmparser::Type {
         match ty {
+            WasmType::S32 => wasmparser::Type::S32,
+            WasmType::S64 => wasmparser::Type::S64,
             WasmType::I32 => wasmparser::Type::I32,
             WasmType::I64 => wasmparser::Type::I64,
             WasmType::F32 => wasmparser::Type::F32,

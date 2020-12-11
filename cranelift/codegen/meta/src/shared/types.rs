@@ -86,6 +86,41 @@ impl Iterator for IntIterator {
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
+pub(crate) enum Secret {
+    /// 32-bit secret int.
+    I32 = 32,
+    /// 64-bit secret int.
+    I64 = 64,
+}
+
+/// This provides an iterator through all of the supported int variants.
+pub(crate) struct IntIterator {
+    index: u8,
+}
+
+impl IntIterator {
+    pub fn new() -> Self {
+        Self { index: 0 }
+    }
+}
+
+impl Iterator for IntIterator {
+    type Item = Int;
+    fn next(&mut self) -> Option<Self::Item> {
+        let res = match self.index {
+            0 => Some(Int::I8),
+            1 => Some(Int::I16),
+            2 => Some(Int::I32),
+            3 => Some(Int::I64),
+            4 => Some(Int::I128),
+            _ => return None,
+        };
+        self.index += 1;
+        res
+    }
+}
+
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
 pub(crate) enum Float {
     F32 = 32,
     F64 = 64,
