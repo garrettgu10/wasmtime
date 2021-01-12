@@ -55,6 +55,10 @@ impl Limits {
 /// A list of all possible value types in WebAssembly.
 #[derive(Debug, Clone, Hash, Eq, PartialEq)]
 pub enum ValType {
+    /// ct-wasm 32-bit secret integer.
+    S32,
+    /// ct-wasm 64-bit secret integer.
+    S64,
     /// Signed 32 bit integer.
     I32,
     /// Signed 64 bit integer.
@@ -76,6 +80,8 @@ impl fmt::Display for ValType {
         match self {
             ValType::I32 => write!(f, "i32"),
             ValType::I64 => write!(f, "i64"),
+            ValType::S32 => write!(f, "s32"),
+            ValType::S64 => write!(f, "s64"),
             ValType::F32 => write!(f, "f32"),
             ValType::F64 => write!(f, "f64"),
             ValType::V128 => write!(f, "v128"),
@@ -107,6 +113,8 @@ impl ValType {
         match self {
             ValType::I32 => ir::types::I32,
             ValType::I64 => ir::types::I64,
+            ValType::S32 => ir::types::I32,
+            ValType::S64 => ir::types::I64,
             ValType::F32 => ir::types::F32,
             ValType::F64 => ir::types::F64,
             ValType::V128 => ir::types::I8X16,
@@ -119,6 +127,8 @@ impl ValType {
         match self {
             Self::I32 => wasm::WasmType::I32,
             Self::I64 => wasm::WasmType::I64,
+            Self::S32 => wasm::WasmType::S32,
+            Self::S64 => wasm::WasmType::S64,
             Self::F32 => wasm::WasmType::F32,
             Self::F64 => wasm::WasmType::F64,
             Self::V128 => wasm::WasmType::V128,
@@ -131,6 +141,8 @@ impl ValType {
         match ty {
             wasm::WasmType::I32 => Self::I32,
             wasm::WasmType::I64 => Self::I64,
+            wasm::WasmType::S32 => Self::S32,
+            wasm::WasmType::S64 => Self::S64,
             wasm::WasmType::F32 => Self::F32,
             wasm::WasmType::F64 => Self::F64,
             wasm::WasmType::V128 => Self::V128,

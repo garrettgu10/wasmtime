@@ -2654,7 +2654,7 @@ dependencies = [
  "smallvec",
  "target-lexicon",
  "tempfile",
- "wasmparser 0.69.2",
+ "wasmparser 0.68.0",
  "wasmtime-cache",
  "wasmtime-environ",
  "wasmtime-jit",
@@ -2732,7 +2732,7 @@ dependencies = [
  "test-programs",
  "tracing-subscriber",
  "wasi-common",
- "wasmparser 0.69.2",
+ "wasmparser 0.68.0",
  "wasmtime",
  "wasmtime-cache",
  "wasmtime-debug",
@@ -2768,7 +2768,7 @@ dependencies = [
  "object",
  "target-lexicon",
  "thiserror",
- "wasmparser 0.69.2",
+ "wasmparser 0.68.0",
  "wasmtime-environ",
 ]
 
@@ -2787,7 +2787,7 @@ dependencies = [
  "more-asserts",
  "serde",
  "thiserror",
- "wasmparser 0.69.2",
+ "wasmparser 0.68.0",
 ]
 
 [[package]]
@@ -2844,7 +2844,7 @@ dependencies = [
  "serde",
  "target-lexicon",
  "thiserror",
- "wasmparser 0.69.2",
+ "wasmparser 0.68.0",
  "wasmtime-cranelift",
  "wasmtime-debug",
  "wasmtime-environ",

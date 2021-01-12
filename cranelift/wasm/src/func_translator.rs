@@ -188,6 +188,8 @@ fn declare_locals<FE: FuncEnvironment + ?Sized>(
     let zeroval = match wasm_type {
         I32 => builder.ins().iconst(ir::types::I32, 0),
         I64 => builder.ins().iconst(ir::types::I64, 0),
+        S32 => builder.ins().iconst(ir::types::I32, 0),
+        S64 => builder.ins().iconst(ir::types::I64, 0),
         F32 => builder.ins().f32const(ir::immediates::Ieee32::with_bits(0)),
         F64 => builder.ins().f64const(ir::immediates::Ieee64::with_bits(0)),
         V128 => {

@@ -184,7 +184,7 @@ impl Default for WasmFeatures {
             exceptions: false,
             memory64: false,
             deterministic_only: cfg!(feature = "deterministic"),
-            constant_time: false,
+            constant_time: true,
 
             // on-by-default features
             multi_value: true,

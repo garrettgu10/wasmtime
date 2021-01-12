@@ -116,6 +116,8 @@ impl Val {
         match ty {
             ValType::I32 => Val::I32(ptr::read(p as *const i32)),
             ValType::I64 => Val::I64(ptr::read(p as *const i64)),
+            ValType::S32 => Val::I32(ptr::read(p as *const i32)),
+            ValType::S64 => Val::I64(ptr::read(p as *const i64)),
             ValType::F32 => Val::F32(ptr::read(p as *const u32)),
             ValType::F64 => Val::F64(ptr::read(p as *const u64)),
             ValType::V128 => Val::V128(ptr::read(p as *const u128)),
