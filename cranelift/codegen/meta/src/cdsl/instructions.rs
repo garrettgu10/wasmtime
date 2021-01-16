@@ -42,6 +42,13 @@ impl<'all_inst> InstructionGroupBuilder<'all_inst> {
         self.own_instructions.push(inst.clone());
         self.all_instructions.push(inst);
     }
+    
+    pub fn push_with_dit(&mut self, builder: InstructionBuilder) {
+        let mut dit_variant = builder.clone();
+        self.push(builder);
+        dit_variant.name += "DIT";
+        self.push(dit_variant);
+    }
 
     pub fn build(self) -> InstructionGroup {
         InstructionGroup {
@@ -197,6 +204,7 @@ impl fmt::Display for InstructionContent {
     }
 }
 
+#[derive(Clone)]
 pub(crate) struct InstructionBuilder {
     name: String,
     doc: String,

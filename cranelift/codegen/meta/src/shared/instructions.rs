@@ -811,7 +811,7 @@ pub(crate) fn define(
     let MemFlags = &Operand::new("MemFlags", &imm.memflags);
     let args = &Operand::new("args", &entities.varargs).with_doc("Address arguments");
 
-    ig.push(
+    ig.push_with_dit(
         Inst::new(
             "load",
             r#"
@@ -843,7 +843,7 @@ pub(crate) fn define(
         .can_load(true),
     );
 
-    ig.push(
+    ig.push_with_dit(
         Inst::new(
             "store",
             r#"
@@ -881,7 +881,7 @@ pub(crate) fn define(
     let x = &Operand::new("x", iExt8);
     let a = &Operand::new("a", iExt8);
 
-    ig.push(
+    ig.push_with_dit(
         Inst::new(
             "uload8",
             r#"
@@ -911,7 +911,7 @@ pub(crate) fn define(
         .can_load(true),
     );
 
-    ig.push(
+    ig.push_with_dit(
         Inst::new(
             "sload8",
             r#"
@@ -941,7 +941,7 @@ pub(crate) fn define(
         .can_load(true),
     );
 
-    ig.push(
+    ig.push_with_dit(
         Inst::new(
             "istore8",
             r#"
@@ -977,7 +977,7 @@ pub(crate) fn define(
     let x = &Operand::new("x", iExt16);
     let a = &Operand::new("a", iExt16);
 
-    ig.push(
+    ig.push_with_dit(
         Inst::new(
             "uload16",
             r#"
@@ -1007,7 +1007,7 @@ pub(crate) fn define(
         .can_load(true),
     );
 
-    ig.push(
+    ig.push_with_dit(
         Inst::new(
             "sload16",
             r#"
@@ -1037,7 +1037,7 @@ pub(crate) fn define(
         .can_load(true),
     );
 
-    ig.push(
+    ig.push_with_dit(
         Inst::new(
             "istore16",
             r#"
@@ -1073,7 +1073,7 @@ pub(crate) fn define(
     let x = &Operand::new("x", iExt32);
     let a = &Operand::new("a", iExt32);
 
-    ig.push(
+    ig.push_with_dit(
         Inst::new(
             "uload32",
             r#"
@@ -1103,7 +1103,7 @@ pub(crate) fn define(
         .can_load(true),
     );
 
-    ig.push(
+    ig.push_with_dit(
         Inst::new(
             "sload32",
             r#"
@@ -1133,7 +1133,7 @@ pub(crate) fn define(
         .can_load(true),
     );
 
-    ig.push(
+    ig.push_with_dit(
         Inst::new(
             "istore32",
             r#"
@@ -2216,7 +2216,7 @@ pub(crate) fn define(
     let x = &Operand::new("x", Int);
     let y = &Operand::new("y", Int);
 
-    ig.push(
+    ig.push_with_dit(
         Inst::new(
             "icmp",
             r#"
@@ -2310,24 +2310,9 @@ pub(crate) fn define(
     let x = &Operand::new("x", Int);
     let y = &Operand::new("y", Int);
 
-    ig.push(
+    ig.push_with_dit(
         Inst::new(
             "iadd",
-            r#"
-        Wrapping integer addition: `a := x + y \pmod{2^B}`.
-
-        This instruction does not depend on the signed/unsigned interpretation
-        of the operands.
-        "#,
-            &formats.binary,
-        )
-        .operands_in(vec![x, y])
-        .operands_out(vec![a]),
-    );
-
-    ig.push(
-        Inst::new(
-            "iaddDIT",
             r#"
         Wrapping integer addition: `a := x + y \pmod{2^B}`.
 
@@ -2374,7 +2359,7 @@ pub(crate) fn define(
         .operands_out(vec![a]),
     );
 
-    ig.push(
+    ig.push_with_dit(
         Inst::new(
             "isub",
             r#"
@@ -2445,7 +2430,7 @@ pub(crate) fn define(
         .operands_out(vec![a]),
     );
 
-    ig.push(
+    ig.push_with_dit(
         Inst::new(
             "imul",
             r#"
@@ -2494,7 +2479,7 @@ pub(crate) fn define(
         .operands_out(vec![a]),
     );
 
-    ig.push(
+    ig.push_with_dit(
         Inst::new(
             "udiv",
             r#"
@@ -2509,7 +2494,7 @@ pub(crate) fn define(
         .can_trap(true),
     );
 
-    ig.push(
+    ig.push_with_dit(
         Inst::new(
             "sdiv",
             r#"
@@ -2527,7 +2512,7 @@ pub(crate) fn define(
         .can_trap(true),
     );
 
-    ig.push(
+    ig.push_with_dit(
         Inst::new(
             "urem",
             r#"
@@ -2542,7 +2527,7 @@ pub(crate) fn define(
         .can_trap(true),
     );
 
-    ig.push(
+    ig.push_with_dit(
         Inst::new(
             "srem",
             r#"
@@ -2959,7 +2944,7 @@ pub(crate) fn define(
     let y = &Operand::new("y", bits);
     let a = &Operand::new("a", bits);
 
-    ig.push(
+    ig.push_with_dit(
         Inst::new(
             "band",
             r#"
@@ -2971,7 +2956,7 @@ pub(crate) fn define(
         .operands_out(vec![a]),
     );
 
-    ig.push(
+    ig.push_with_dit(
         Inst::new(
             "bor",
             r#"
@@ -2983,7 +2968,7 @@ pub(crate) fn define(
         .operands_out(vec![a]),
     );
 
-    ig.push(
+    ig.push_with_dit(
         Inst::new(
             "bxor",
             r#"
@@ -3109,7 +3094,7 @@ pub(crate) fn define(
     let Y = &Operand::new("Y", &imm.imm64);
     let a = &Operand::new("a", Int);
 
-    ig.push(
+    ig.push_with_dit(
         Inst::new(
             "rotl",
             r#"
@@ -3123,7 +3108,7 @@ pub(crate) fn define(
         .operands_out(vec![a]),
     );
 
-    ig.push(
+    ig.push_with_dit(
         Inst::new(
             "rotr",
             r#"
@@ -3161,7 +3146,7 @@ pub(crate) fn define(
         .operands_out(vec![a]),
     );
 
-    ig.push(
+    ig.push_with_dit(
         Inst::new(
             "ishl",
             r#"
@@ -3183,7 +3168,7 @@ pub(crate) fn define(
         .operands_out(vec![a]),
     );
 
-    ig.push(
+    ig.push_with_dit(
         Inst::new(
             "ushr",
             r#"
@@ -3206,7 +3191,7 @@ pub(crate) fn define(
         .operands_out(vec![a]),
     );
 
-    ig.push(
+    ig.push_with_dit(
         Inst::new(
             "sshr",
             r#"
@@ -3281,7 +3266,7 @@ pub(crate) fn define(
         .operands_out(vec![a]),
     );
 
-    ig.push(
+    ig.push_with_dit(
         Inst::new(
             "clz",
             r#"
@@ -3313,7 +3298,7 @@ pub(crate) fn define(
         .operands_out(vec![a]),
     );
 
-    ig.push(
+    ig.push_with_dit(
         Inst::new(
             "ctz",
             r#"
@@ -3329,7 +3314,7 @@ pub(crate) fn define(
         .operands_out(vec![a]),
     );
 
-    ig.push(
+    ig.push_with_dit(
         Inst::new(
             "popcnt",
             r#"
@@ -3899,7 +3884,7 @@ pub(crate) fn define(
     let x = &Operand::new("x", Bool);
     let a = &Operand::new("a", IntTo);
 
-    ig.push(
+    ig.push_with_dit(
         Inst::new(
             "bint",
             r#"
@@ -3949,7 +3934,7 @@ pub(crate) fn define(
     let x = &Operand::new("x", Int);
     let a = &Operand::new("a", IntTo);
 
-    ig.push(
+    ig.push_with_dit(
         Inst::new(
             "ireduce",
             r#"
@@ -4136,7 +4121,7 @@ pub(crate) fn define(
     let x = &Operand::new("x", Int);
     let a = &Operand::new("a", IntTo);
 
-    ig.push(
+    ig.push_with_dit(
         Inst::new(
             "uextend",
             r#"
@@ -4157,7 +4142,7 @@ pub(crate) fn define(
         .constraints(vec![WiderOrEq(IntTo.clone(), Int.clone())]),
     );
 
-    ig.push(
+    ig.push_with_dit(
         Inst::new(
             "sextend",
             r#"

@@ -672,40 +672,40 @@ pub fn translate_operator<FE: FuncEnvironment + ?Sized>(
             translate_load(memarg, ir::Opcode::Load, I64, builder, state, environ)?;
         }
         Operator::S32Load8U { memarg } => {
-            translate_load(memarg, ir::Opcode::Uload8, I32, builder, state, environ)?;
+            translate_load(memarg, ir::Opcode::Uload8DIT, I32, builder, state, environ)?;
         }
         Operator::S32Load16U { memarg } => {
-            translate_load(memarg, ir::Opcode::Uload16, I32, builder, state, environ)?;
+            translate_load(memarg, ir::Opcode::Uload16DIT, I32, builder, state, environ)?;
         }
         Operator::S32Load8S { memarg } => {
-            translate_load(memarg, ir::Opcode::Sload8, I32, builder, state, environ)?;
+            translate_load(memarg, ir::Opcode::Sload8DIT, I32, builder, state, environ)?;
         }
         Operator::S32Load16S { memarg } => {
-            translate_load(memarg, ir::Opcode::Sload16, I32, builder, state, environ)?;
+            translate_load(memarg, ir::Opcode::Sload16DIT, I32, builder, state, environ)?;
         }
         Operator::S64Load8U { memarg } => {
-            translate_load(memarg, ir::Opcode::Uload8, I64, builder, state, environ)?;
+            translate_load(memarg, ir::Opcode::Uload8DIT, I64, builder, state, environ)?;
         }
         Operator::S64Load16U { memarg } => {
-            translate_load(memarg, ir::Opcode::Uload16, I64, builder, state, environ)?;
+            translate_load(memarg, ir::Opcode::Uload16DIT, I64, builder, state, environ)?;
         }
         Operator::S64Load8S { memarg } => {
-            translate_load(memarg, ir::Opcode::Sload8, I64, builder, state, environ)?;
+            translate_load(memarg, ir::Opcode::Sload8DIT, I64, builder, state, environ)?;
         }
         Operator::S64Load16S { memarg } => {
-            translate_load(memarg, ir::Opcode::Sload16, I64, builder, state, environ)?;
+            translate_load(memarg, ir::Opcode::Sload16DIT, I64, builder, state, environ)?;
         }
         Operator::S64Load32S { memarg } => {
-            translate_load(memarg, ir::Opcode::Sload32, I64, builder, state, environ)?;
+            translate_load(memarg, ir::Opcode::Sload32DIT, I64, builder, state, environ)?;
         }
         Operator::S64Load32U { memarg } => {
-            translate_load(memarg, ir::Opcode::Uload32, I64, builder, state, environ)?;
+            translate_load(memarg, ir::Opcode::Uload32DIT, I64, builder, state, environ)?;
         }
         Operator::S32Load { memarg } => {
-            translate_load(memarg, ir::Opcode::Load, I32, builder, state, environ)?;
+            translate_load(memarg, ir::Opcode::LoadDIT, I32, builder, state, environ)?;
         }
         Operator::S64Load { memarg } => {
-            translate_load(memarg, ir::Opcode::Load, I64, builder, state, environ)?;
+            translate_load(memarg, ir::Opcode::LoadDIT, I64, builder, state, environ)?;
         }
         Operator::F32Load { memarg } => {
             translate_load(memarg, ir::Opcode::Load, F32, builder, state, environ)?;
@@ -751,27 +751,36 @@ pub fn translate_operator<FE: FuncEnvironment + ?Sized>(
          * The memory base address is provided by the environment.
          ************************************************************************************/
         Operator::I32Store { memarg }
-        | Operator::S32Store { memarg }
         | Operator::I64Store { memarg }
-        | Operator::S64Store { memarg }
         | Operator::F32Store { memarg }
         | Operator::F64Store { memarg } => {
             translate_store(memarg, ir::Opcode::Store, builder, state, environ)?;
         }
+        Operator::S32Store { memarg } 
+        | Operator::S64Store { memarg } => {
+            translate_store(memarg, ir::Opcode::StoreDIT, builder, state, environ)?;
+        }
         Operator::I32Store8 { memarg } 
-        | Operator::I64Store8 { memarg } 
-        | Operator::S32Store8 { memarg } 
-        | Operator::S64Store8 { memarg } => {
+        | Operator::I64Store8 { memarg } => {
             translate_store(memarg, ir::Opcode::Istore8, builder, state, environ)?;
+        } 
+        Operator::S32Store8 { memarg } 
+        | Operator::S64Store8 { memarg } => {
+            translate_store(memarg, ir::Opcode::Istore8DIT, builder, state, environ)?;
         }
         Operator::I32Store16 { memarg } 
-        | Operator::I64Store16 { memarg } 
-        | Operator::S32Store16 { memarg } 
-        | Operator::S64Store16 { memarg } => {
+        | Operator::I64Store16 { memarg } => {
             translate_store(memarg, ir::Opcode::Istore16, builder, state, environ)?;
         }
-        Operator::I64Store32 { memarg } | Operator::S64Store32 { memarg } => {
+        Operator::S32Store16 { memarg } 
+        | Operator::S64Store16 { memarg } => {
+            translate_store(memarg, ir::Opcode::Istore16DIT, builder, state, environ)?;
+        }
+        Operator::I64Store32 { memarg } => {
             translate_store(memarg, ir::Opcode::Istore32, builder, state, environ)?;
+        }
+        Operator::S64Store32 { memarg } => {
+            translate_store(memarg, ir::Opcode::Istore32DIT, builder, state, environ)?;
         }
         Operator::V128Store { memarg } => {
             translate_store(memarg, ir::Opcode::Store, builder, state, environ)?;
@@ -812,27 +821,27 @@ pub fn translate_operator<FE: FuncEnvironment + ?Sized>(
         }
         Operator::S32Clz | Operator::S64Clz => {
             let arg = state.pop1();
-            state.push1(builder.ins().clz(arg));
+            state.push1(builder.ins().clzDIT(arg));
         }
         Operator::S32Ctz | Operator::S64Ctz => {
             let arg = state.pop1();
-            state.push1(builder.ins().ctz(arg));
+            state.push1(builder.ins().ctzDIT(arg));
         }
         Operator::S32Popcnt | Operator::S64Popcnt => {
             let arg = state.pop1();
-            state.push1(builder.ins().popcnt(arg));
+            state.push1(builder.ins().popcntDIT(arg));
         }
         Operator::S64ExtendS32S => {
             let val = state.pop1();
-            state.push1(builder.ins().sextend(I64, val));
+            state.push1(builder.ins().sextendDIT(I64, val));
         }
         Operator::S64ExtendS32U => {
             let val = state.pop1();
-            state.push1(builder.ins().uextend(I64, val));
+            state.push1(builder.ins().uextendDIT(I64, val));
         }
         Operator::S32WrapS64 => {
             let val = state.pop1();
-            state.push1(builder.ins().ireduce(I32, val));
+            state.push1(builder.ins().ireduceDIT(I32, val));
         }
         Operator::F32Sqrt | Operator::F64Sqrt => {
             let arg = state.pop1();
@@ -1007,35 +1016,35 @@ pub fn translate_operator<FE: FuncEnvironment + ?Sized>(
         }
         Operator::S32And | Operator::S64And => {
             let (arg1, arg2) = state.pop2();
-            state.push1(builder.ins().band(arg1, arg2));
+            state.push1(builder.ins().bandDIT(arg1, arg2));
         }
         Operator::S32Or | Operator::S64Or => {
             let (arg1, arg2) = state.pop2();
-            state.push1(builder.ins().bor(arg1, arg2));
+            state.push1(builder.ins().borDIT(arg1, arg2));
         }
         Operator::S32Xor | Operator::S64Xor => {
             let (arg1, arg2) = state.pop2();
-            state.push1(builder.ins().bxor(arg1, arg2));
+            state.push1(builder.ins().bxorDIT(arg1, arg2));
         }
         Operator::S32Shl | Operator::S64Shl => {
             let (arg1, arg2) = state.pop2();
-            state.push1(builder.ins().ishl(arg1, arg2));
+            state.push1(builder.ins().ishlDIT(arg1, arg2));
         }
         Operator::S32ShrS | Operator::S64ShrS => {
             let (arg1, arg2) = state.pop2();
-            state.push1(builder.ins().sshr(arg1, arg2));
+            state.push1(builder.ins().sshrDIT(arg1, arg2));
         }
         Operator::S32ShrU | Operator::S64ShrU => {
             let (arg1, arg2) = state.pop2();
-            state.push1(builder.ins().ushr(arg1, arg2));
+            state.push1(builder.ins().ushrDIT(arg1, arg2));
         }
         Operator::S32Rotl | Operator::S64Rotl => {
             let (arg1, arg2) = state.pop2();
-            state.push1(builder.ins().rotl(arg1, arg2));
+            state.push1(builder.ins().rotlDIT(arg1, arg2));
         }
         Operator::S32Rotr | Operator::S64Rotr => {
             let (arg1, arg2) = state.pop2();
-            state.push1(builder.ins().rotr(arg1, arg2));
+            state.push1(builder.ins().rotrDIT(arg1, arg2));
         }
         Operator::F32Add | Operator::F64Add => {
             let (arg1, arg2) = state.pop2();
@@ -1047,7 +1056,7 @@ pub fn translate_operator<FE: FuncEnvironment + ?Sized>(
         }
         Operator::S32Sub | Operator::S64Sub => {
             let (arg1, arg2) = state.pop2();
-            state.push1(builder.ins().isub(arg1, arg2));
+            state.push1(builder.ins().isubDIT(arg1, arg2));
         }
         Operator::F32Sub | Operator::F64Sub => {
             let (arg1, arg2) = state.pop2();
@@ -1059,7 +1068,7 @@ pub fn translate_operator<FE: FuncEnvironment + ?Sized>(
         }
         Operator::S32Mul | Operator::S64Mul => {
             let (arg1, arg2) = state.pop2();
-            state.push1(builder.ins().imul(arg1, arg2));
+            state.push1(builder.ins().imulDIT(arg1, arg2));
         }
         Operator::F32Mul | Operator::F64Mul => {
             let (arg1, arg2) = state.pop2();
@@ -1087,19 +1096,19 @@ pub fn translate_operator<FE: FuncEnvironment + ?Sized>(
         }
         Operator::S32DivS | Operator::S64DivS => {
             let (arg1, arg2) = state.pop2();
-            state.push1(builder.ins().sdiv(arg1, arg2));
+            state.push1(builder.ins().sdivDIT(arg1, arg2));
         }
         Operator::S32DivU | Operator::S64DivU => {
             let (arg1, arg2) = state.pop2();
-            state.push1(builder.ins().udiv(arg1, arg2));
+            state.push1(builder.ins().udivDIT(arg1, arg2));
         }
         Operator::S32RemS | Operator::S64RemS => {
             let (arg1, arg2) = state.pop2();
-            state.push1(builder.ins().srem(arg1, arg2));
+            state.push1(builder.ins().sremDIT(arg1, arg2));
         }
         Operator::S32RemU | Operator::S64RemU => {
             let (arg1, arg2) = state.pop2();
-            state.push1(builder.ins().urem(arg1, arg2));
+            state.push1(builder.ins().uremDIT(arg1, arg2));
         }
         Operator::F32Min | Operator::F64Min => {
             let (arg1, arg2) = state.pop2();
@@ -1156,36 +1165,36 @@ pub fn translate_operator<FE: FuncEnvironment + ?Sized>(
             translate_fcmp(FloatCC::LessThanOrEqual, builder, state)
         }
         Operator::S32LtS | Operator::S64LtS => {
-            translate_icmp(IntCC::SignedLessThan, builder, state)
+            translate_icmp_dit(IntCC::SignedLessThan, builder, state)
         }
         Operator::S32LtU | Operator::S64LtU => {
-            translate_icmp(IntCC::UnsignedLessThan, builder, state)
+            translate_icmp_dit(IntCC::UnsignedLessThan, builder, state)
         }
         Operator::S32LeS | Operator::S64LeS => {
-            translate_icmp(IntCC::SignedLessThanOrEqual, builder, state)
+            translate_icmp_dit(IntCC::SignedLessThanOrEqual, builder, state)
         }
         Operator::S32LeU | Operator::S64LeU => {
-            translate_icmp(IntCC::UnsignedLessThanOrEqual, builder, state)
+            translate_icmp_dit(IntCC::UnsignedLessThanOrEqual, builder, state)
         }
         Operator::S32GtS | Operator::S64GtS => {
-            translate_icmp(IntCC::SignedGreaterThan, builder, state)
+            translate_icmp_dit(IntCC::SignedGreaterThan, builder, state)
         }
         Operator::S32GtU | Operator::S64GtU => {
-            translate_icmp(IntCC::UnsignedGreaterThan, builder, state)
+            translate_icmp_dit(IntCC::UnsignedGreaterThan, builder, state)
         }
         Operator::S32GeS | Operator::S64GeS => {
-            translate_icmp(IntCC::SignedGreaterThanOrEqual, builder, state)
+            translate_icmp_dit(IntCC::SignedGreaterThanOrEqual, builder, state)
         }
         Operator::S32GeU | Operator::S64GeU => {
-            translate_icmp(IntCC::UnsignedGreaterThanOrEqual, builder, state)
+            translate_icmp_dit(IntCC::UnsignedGreaterThanOrEqual, builder, state)
         }
         Operator::S32Eqz | Operator::S64Eqz => {
             let arg = state.pop1();
             let val = builder.ins().icmp_imm(IntCC::Equal, arg, 0);
-            state.push1(builder.ins().bint(I32, val));
+            state.push1(builder.ins().bintDIT(I32, val));
         }
-        Operator::S32Eq | Operator::S64Eq => translate_icmp(IntCC::Equal, builder, state),
-        Operator::S32Ne | Operator::S64Ne => translate_icmp(IntCC::NotEqual, builder, state),
+        Operator::S32Eq | Operator::S64Eq => translate_icmp_dit(IntCC::Equal, builder, state),
+        Operator::S32Ne | Operator::S64Ne => translate_icmp_dit(IntCC::NotEqual, builder, state),
         Operator::RefNull { ty } => {
             state.push1(environ.translate_ref_null(builder.cursor(), (*ty).try_into()?)?)
         }
@@ -2278,10 +2287,14 @@ fn translate_store<FE: FuncEnvironment + ?Sized>(
 
 fn mem_op_size(opcode: ir::Opcode, ty: Type) -> u32 {
     match opcode {
-        ir::Opcode::Istore8 | ir::Opcode::Sload8 | ir::Opcode::Uload8 => 1,
-        ir::Opcode::Istore16 | ir::Opcode::Sload16 | ir::Opcode::Uload16 => 2,
-        ir::Opcode::Istore32 | ir::Opcode::Sload32 | ir::Opcode::Uload32 => 4,
-        ir::Opcode::Store | ir::Opcode::Load => ty.bytes(),
+        ir::Opcode::Istore8 | ir::Opcode::Sload8 | ir::Opcode::Uload8
+        |ir::Opcode::Istore8DIT | ir::Opcode::Sload8DIT | ir::Opcode::Uload8DIT => 1,
+        ir::Opcode::Istore16 | ir::Opcode::Sload16 | ir::Opcode::Uload16
+        | ir::Opcode::Istore16DIT | ir::Opcode::Sload16DIT | ir::Opcode::Uload16DIT => 2,
+        ir::Opcode::Istore32 | ir::Opcode::Sload32 | ir::Opcode::Uload32
+        | ir::Opcode::Istore32DIT | ir::Opcode::Sload32DIT | ir::Opcode::Uload32DIT => 4,
+        ir::Opcode::Store | ir::Opcode::Load
+        | ir::Opcode::StoreDIT | ir::Opcode::LoadDIT => ty.bytes(),
         _ => panic!("unknown size of mem op for {:?}", opcode),
     }
 }
@@ -2290,6 +2303,12 @@ fn translate_icmp(cc: IntCC, builder: &mut FunctionBuilder, state: &mut FuncTran
     let (arg0, arg1) = state.pop2();
     let val = builder.ins().icmp(cc, arg0, arg1);
     state.push1(builder.ins().bint(I32, val));
+}
+
+fn translate_icmp_dit(cc: IntCC, builder: &mut FunctionBuilder, state: &mut FuncTranslationState) {
+    let (arg0, arg1) = state.pop2();
+    let val = builder.ins().icmpDIT(cc, arg0, arg1);
+    state.push1(builder.ins().bintDIT(I32, val));
 }
 
 // For an atomic memory operation, emit an alignment check for the linear memory address,

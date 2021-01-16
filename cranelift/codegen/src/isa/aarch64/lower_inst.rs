@@ -115,7 +115,7 @@ pub(crate) fn lower_insn_to_regs<C: LowerCtx<I = Inst>>(
                 });
             }
         }
-        Opcode::Isub => {
+        Opcode::Isub | Opcode::IsubDIT => {
             let rd = get_output_reg(ctx, outputs[0]);
             let rn = put_input_in_reg(ctx, inputs[0], NarrowValueMode::None);
             let ty = ty.unwrap();
@@ -229,7 +229,7 @@ pub(crate) fn lower_insn_to_regs<C: LowerCtx<I = Inst>>(
             }
         }
 
-        Opcode::Imul => {
+        Opcode::Imul | Opcode::ImulDIT => {
             let rd = get_output_reg(ctx, outputs[0]);
             let rn = put_input_in_reg(ctx, inputs[0], NarrowValueMode::None);
             let rm = put_input_in_reg(ctx, inputs[1], NarrowValueMode::None);
@@ -419,15 +419,17 @@ pub(crate) fn lower_insn_to_regs<C: LowerCtx<I = Inst>>(
             }
         }
 
-        Opcode::Udiv | Opcode::Sdiv | Opcode::Urem | Opcode::Srem => {
+        Opcode::Udiv | Opcode::UdivDIT 
+        | Opcode::Sdiv | Opcode::SdivDIT 
+        | Opcode::Urem | Opcode::UremDIT | Opcode::Srem | Opcode::SremDIT => {
             let is_signed = match op {
-                Opcode::Udiv | Opcode::Urem => false,
-                Opcode::Sdiv | Opcode::Srem => true,
+                Opcode::Udiv | Opcode::UdivDIT | Opcode::Urem | Opcode::UremDIT => false,
+                Opcode::Sdiv | Opcode::SdivDIT | Opcode::Srem | Opcode::SremDIT => true,
                 _ => unreachable!(),
             };
             let is_rem = match op {
-                Opcode::Udiv | Opcode::Sdiv => false,
-                Opcode::Urem | Opcode::Srem => true,
+                Opcode::Udiv | Opcode::UdivDIT | Opcode::Sdiv | Opcode::SdivDIT  => false,
+                Opcode::Urem | Opcode::UremDIT | Opcode::Srem | Opcode::SremDIT => true,
                 _ => unreachable!(),
             };
             let narrow_mode = if is_signed {
@@ -541,7 +543,7 @@ pub(crate) fn lower_insn_to_regs<C: LowerCtx<I = Inst>>(
             }
         }
 
-        Opcode::Uextend | Opcode::Sextend => {
+        Opcode::Uextend | Opcode::Sextend | Opcode::UextendDIT | Opcode::SextendDIT => {
             let output_ty = ty.unwrap();
             let input_ty = ctx.input_ty(insn, 0);
             let from_bits = ty_bits(input_ty) as u8;
@@ -549,7 +551,7 @@ pub(crate) fn lower_insn_to_regs<C: LowerCtx<I = Inst>>(
             let to_bits = std::cmp::max(32, to_bits);
             assert!(from_bits <= to_bits);
             if from_bits < to_bits {
-                let signed = op == Opcode::Sextend;
+                let signed = op == Opcode::Sextend || op == Opcode::SextendDIT;
                 let rd = get_output_reg(ctx, outputs[0]);
 
                 if let Some(extract_insn) = maybe_input_insn(ctx, inputs[0], Opcode::Extractlane) {
@@ -614,9 +616,9 @@ pub(crate) fn lower_insn_to_regs<C: LowerCtx<I = Inst>>(
             }
         }
 
-        Opcode::Band
-        | Opcode::Bor
-        | Opcode::Bxor
+        Opcode::Band | Opcode::BandDIT
+        | Opcode::Bor | Opcode::BorDIT
+        | Opcode::Bxor | Opcode::BxorDIT
         | Opcode::BandNot
         | Opcode::BorNot
         | Opcode::BxorNot => {
@@ -626,9 +628,9 @@ pub(crate) fn lower_insn_to_regs<C: LowerCtx<I = Inst>>(
                 let rn = put_input_in_reg(ctx, inputs[0], NarrowValueMode::None);
                 let rm = put_input_in_rs_immlogic(ctx, inputs[1], NarrowValueMode::None);
                 let alu_op = match op {
-                    Opcode::Band => choose_32_64(ty, ALUOp::And32, ALUOp::And64),
-                    Opcode::Bor => choose_32_64(ty, ALUOp::Orr32, ALUOp::Orr64),
-                    Opcode::Bxor => choose_32_64(ty, ALUOp::Eor32, ALUOp::Eor64),
+                    Opcode::Band | Opcode::BandDIT => choose_32_64(ty, ALUOp::And32, ALUOp::And64),
+                    Opcode::Bor | Opcode::BorDIT => choose_32_64(ty, ALUOp::Orr32, ALUOp::Orr64),
+                    Opcode::Bxor | Opcode::BxorDIT => choose_32_64(ty, ALUOp::Eor32, ALUOp::Eor64),
                     Opcode::BandNot => choose_32_64(ty, ALUOp::AndNot32, ALUOp::AndNot64),
                     Opcode::BorNot => choose_32_64(ty, ALUOp::OrrNot32, ALUOp::OrrNot64),
                     Opcode::BxorNot => choose_32_64(ty, ALUOp::EorNot32, ALUOp::EorNot64),
@@ -637,10 +639,10 @@ pub(crate) fn lower_insn_to_regs<C: LowerCtx<I = Inst>>(
                 ctx.emit(alu_inst_immlogic(alu_op, rd, rn, rm));
             } else {
                 let alu_op = match op {
-                    Opcode::Band => VecALUOp::And,
+                    Opcode::Band | Opcode::BandDIT => VecALUOp::And,
                     Opcode::BandNot => VecALUOp::Bic,
-                    Opcode::Bor => VecALUOp::Orr,
-                    Opcode::Bxor => VecALUOp::Eor,
+                    Opcode::Bor | Opcode::BorDIT => VecALUOp::Orr,
+                    Opcode::Bxor | Opcode::BxorDIT => VecALUOp::Eor,
                     _ => unreachable!(),
                 };
 
@@ -658,25 +660,31 @@ pub(crate) fn lower_insn_to_regs<C: LowerCtx<I = Inst>>(
             }
         }
 
-        Opcode::Ishl | Opcode::Ushr | Opcode::Sshr => {
+        Opcode::Ishl | Opcode::IshlDIT 
+        | Opcode::Ushr | Opcode::UshrDIT 
+        | Opcode::Sshr | Opcode::SshrDIT => {
             let ty = ty.unwrap();
             let rd = get_output_reg(ctx, outputs[0]);
             if !ty.is_vector() {
                 let size = OperandSize::from_bits(ty_bits(ty));
                 let narrow_mode = match (op, size) {
-                    (Opcode::Ishl, _) => NarrowValueMode::None,
-                    (Opcode::Ushr, OperandSize::Size64) => NarrowValueMode::ZeroExtend64,
-                    (Opcode::Ushr, OperandSize::Size32) => NarrowValueMode::ZeroExtend32,
-                    (Opcode::Sshr, OperandSize::Size64) => NarrowValueMode::SignExtend64,
-                    (Opcode::Sshr, OperandSize::Size32) => NarrowValueMode::SignExtend32,
+                    (Opcode::Ishl, _) | (Opcode::IshlDIT, _) => NarrowValueMode::None,
+                    (Opcode::Ushr, OperandSize::Size64)
+                    | (Opcode::UshrDIT, OperandSize::Size64) => NarrowValueMode::ZeroExtend64,
+                    (Opcode::Ushr, OperandSize::Size32)
+                    | (Opcode::UshrDIT, OperandSize::Size32) => NarrowValueMode::ZeroExtend32,
+                    (Opcode::Sshr, OperandSize::Size64)
+                    | (Opcode::SshrDIT, OperandSize::Size64) => NarrowValueMode::SignExtend64,
+                    (Opcode::Sshr, OperandSize::Size32)
+                    | (Opcode::SshrDIT, OperandSize::Size32) => NarrowValueMode::SignExtend32,
                     _ => unreachable!(),
                 };
                 let rn = put_input_in_reg(ctx, inputs[0], narrow_mode);
                 let rm = put_input_in_reg_immshift(ctx, inputs[1], ty_bits(ty));
                 let alu_op = match op {
-                    Opcode::Ishl => choose_32_64(ty, ALUOp::Lsl32, ALUOp::Lsl64),
-                    Opcode::Ushr => choose_32_64(ty, ALUOp::Lsr32, ALUOp::Lsr64),
-                    Opcode::Sshr => choose_32_64(ty, ALUOp::Asr32, ALUOp::Asr64),
+                    Opcode::Ishl | Opcode::IshlDIT => choose_32_64(ty, ALUOp::Lsl32, ALUOp::Lsl64),
+                    Opcode::Ushr | Opcode::UshrDIT => choose_32_64(ty, ALUOp::Lsr32, ALUOp::Lsr64),
+                    Opcode::Sshr | Opcode::SshrDIT => choose_32_64(ty, ALUOp::Asr32, ALUOp::Asr64),
                     _ => unreachable!(),
                 };
                 ctx.emit(alu_inst_immshift(alu_op, rd, rn, rm));
@@ -684,9 +692,9 @@ pub(crate) fn lower_insn_to_regs<C: LowerCtx<I = Inst>>(
                 let rn = put_input_in_reg(ctx, inputs[0], NarrowValueMode::None);
                 let size = VectorSize::from_ty(ty);
                 let (alu_op, is_right_shift) = match op {
-                    Opcode::Ishl => (VecALUOp::Sshl, false),
-                    Opcode::Ushr => (VecALUOp::Ushl, true),
-                    Opcode::Sshr => (VecALUOp::Sshl, true),
+                    Opcode::Ishl | Opcode::IshlDIT => (VecALUOp::Sshl, false),
+                    Opcode::Ushr | Opcode::UshrDIT => (VecALUOp::Ushl, true),
+                    Opcode::Sshr | Opcode::SshrDIT => (VecALUOp::Sshl, true),
                     _ => unreachable!(),
                 };
 
@@ -713,7 +721,7 @@ pub(crate) fn lower_insn_to_regs<C: LowerCtx<I = Inst>>(
             }
         }
 
-        Opcode::Rotr | Opcode::Rotl => {
+        Opcode::Rotr | Opcode::RotrDIT | Opcode::Rotl | Opcode::RotlDIT => {
             // aarch64 doesn't have a left-rotate instruction, but a left rotation of K places is
             // effectively a right rotation of N - K places, if N is the integer's bit size. We
             // implement left rotations with this trick.
@@ -741,7 +749,7 @@ pub(crate) fn lower_insn_to_regs<C: LowerCtx<I = Inst>>(
             //    lsl rd, rn, <bitwidth - shiftimm>
             //    orr rd, rd, tmp2
 
-            let is_rotl = op == Opcode::Rotl;
+            let is_rotl = op == Opcode::Rotl || op == Opcode::RotlDIT;
 
             let ty = ty.unwrap();
             let ty_bits_size = ty_bits(ty) as u8;
@@ -894,11 +902,11 @@ pub(crate) fn lower_insn_to_regs<C: LowerCtx<I = Inst>>(
             }
         }
 
-        Opcode::Bitrev | Opcode::Clz | Opcode::Cls | Opcode::Ctz => {
+        Opcode::Bitrev | Opcode::Clz | Opcode::ClzDIT | Opcode::Cls | Opcode::Ctz | Opcode::CtzDIT => {
             let rd = get_output_reg(ctx, outputs[0]);
             let needs_zext = match op {
-                Opcode::Bitrev | Opcode::Ctz => false,
-                Opcode::Clz | Opcode::Cls => true,
+                Opcode::Bitrev | Opcode::Ctz | Opcode::CtzDIT => false,
+                Opcode::Clz | Opcode::ClzDIT | Opcode::Cls => true,
                 _ => unreachable!(),
             };
             let ty = ty.unwrap();
@@ -916,15 +924,15 @@ pub(crate) fn lower_insn_to_regs<C: LowerCtx<I = Inst>>(
                 _ => panic!("Unsupported type for Bitrev/Clz/Cls"),
             };
             let bitop = match op {
-                Opcode::Clz | Opcode::Cls | Opcode::Bitrev => BitOp::from((op, op_ty)),
-                Opcode::Ctz => BitOp::from((Opcode::Bitrev, op_ty)),
+                Opcode::Clz | Opcode::ClzDIT | Opcode::Cls | Opcode::Bitrev => BitOp::from((op, op_ty)),
+                Opcode::Ctz | Opcode::CtzDIT => BitOp::from((Opcode::Bitrev, op_ty)),
                 _ => unreachable!(),
             };
             ctx.emit(Inst::BitRR { rd, rn, op: bitop });
 
             // Both bitrev and ctz use a bit-reverse (rbit) instruction; ctz to reduce the problem
             // to a clz, and bitrev as the main operation.
-            if op == Opcode::Bitrev || op == Opcode::Ctz {
+            if op == Opcode::Bitrev || op == Opcode::Ctz || op == Opcode::CtzDIT {
                 // Reversing an n-bit value (n < 32) with a 32-bit bitrev instruction will place
                 // the reversed result in the highest n bits, so we need to shift them down into
                 // place.
@@ -945,7 +953,7 @@ pub(crate) fn lower_insn_to_regs<C: LowerCtx<I = Inst>>(
                 }
             }
 
-            if op == Opcode::Ctz {
+            if op == Opcode::Ctz || op == Opcode::CtzDIT {
                 ctx.emit(Inst::BitRR {
                     op: BitOp::from((Opcode::Clz, op_ty)),
                     rd,
@@ -954,7 +962,7 @@ pub(crate) fn lower_insn_to_regs<C: LowerCtx<I = Inst>>(
             }
         }
 
-        Opcode::Popcnt => {
+        Opcode::Popcnt | Opcode::PopcntDIT => {
             // Lower popcount using the following algorithm:
             //
             //   x -= (x >> 1) & 0x5555555555555555
@@ -1096,12 +1104,19 @@ pub(crate) fn lower_insn_to_regs<C: LowerCtx<I = Inst>>(
         }
 
         Opcode::Load
+        | Opcode::LoadDIT
         | Opcode::Uload8
+        | Opcode::Uload8DIT
         | Opcode::Sload8
+        | Opcode::Sload8DIT
         | Opcode::Uload16
+        | Opcode::Uload16DIT
         | Opcode::Sload16
+        | Opcode::Sload16DIT
         | Opcode::Uload32
+        | Opcode::Uload32DIT
         | Opcode::Sload32
+        | Opcode::Sload32DIT
         | Opcode::LoadComplex
         | Opcode::Uload8Complex
         | Opcode::Sload8Complex
@@ -1187,19 +1202,23 @@ pub(crate) fn lower_insn_to_regs<C: LowerCtx<I = Inst>>(
         }
 
         Opcode::Store
+        | Opcode::StoreDIT
         | Opcode::Istore8
+        | Opcode::Istore8DIT
         | Opcode::Istore16
+        | Opcode::Istore16DIT
         | Opcode::Istore32
+        | Opcode::Istore32DIT
         | Opcode::StoreComplex
         | Opcode::Istore8Complex
         | Opcode::Istore16Complex
         | Opcode::Istore32Complex => {
             let off = ctx.data(insn).load_store_offset().unwrap();
             let elem_ty = match op {
-                Opcode::Istore8 | Opcode::Istore8Complex => I8,
-                Opcode::Istore16 | Opcode::Istore16Complex => I16,
-                Opcode::Istore32 | Opcode::Istore32Complex => I32,
-                Opcode::Store | Opcode::StoreComplex => ctx.input_ty(insn, 0),
+                Opcode::Istore8 | Opcode::Istore8DIT | Opcode::Istore8Complex => I8,
+                Opcode::Istore16 | Opcode::Istore16DIT | Opcode::Istore16Complex => I16,
+                Opcode::Istore32 | Opcode::Istore32DIT | Opcode::Istore32Complex => I32,
+                Opcode::Store | Opcode::StoreDIT | Opcode::StoreComplex => ctx.input_ty(insn, 0),
                 _ => unreachable!(),
             };
             let is_float = ty_has_float_or_vec_representation(elem_ty);
@@ -1517,7 +1536,7 @@ pub(crate) fn lower_insn_to_regs<C: LowerCtx<I = Inst>>(
             ctx.emit(Inst::gen_move(rd, rn, ty));
         }
 
-        Opcode::Breduce | Opcode::Ireduce => {
+        Opcode::Breduce | Opcode::Ireduce | Opcode::IreduceDIT => {
             // Smaller integers/booleans are stored with high-order bits
             // undefined, so we can simply do a copy.
             let rn = put_input_in_reg(ctx, inputs[0], NarrowValueMode::None);
@@ -1566,7 +1585,7 @@ pub(crate) fn lower_insn_to_regs<C: LowerCtx<I = Inst>>(
             }
         }
 
-        Opcode::Bint => {
+        Opcode::Bint | Opcode::BintDIT => {
             // Booleans are stored as all-zeroes (0) or all-ones (-1). We AND
             // out the LSB to give a 0 / 1-valued integer result.
             let rn = put_input_in_reg(ctx, inputs[0], NarrowValueMode::None);
@@ -1654,7 +1673,7 @@ pub(crate) fn lower_insn_to_regs<C: LowerCtx<I = Inst>>(
             panic!("Should never reach ifcmp as isel root!");
         }
 
-        Opcode::Icmp => {
+        Opcode::Icmp | Opcode::IcmpDIT => {
             let condcode = ctx.data(insn).cond_code().unwrap();
             let cond = lower_condcode(condcode);
             let is_signed = condcode_is_signed(condcode);
