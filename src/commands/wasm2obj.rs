@@ -68,7 +68,7 @@ impl WasmToObjCommand {
             self.target.as_ref(),
             strategy,
             self.common.enable_simd,
-            self.common.opt_level(),
+            wasmtime::OptLevel::SpeedAndSize,
             self.common.debug_info,
         )?;
 
