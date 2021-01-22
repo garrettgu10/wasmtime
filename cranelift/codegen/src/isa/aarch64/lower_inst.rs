@@ -59,7 +59,7 @@ pub(crate) fn lower_insn_to_regs<C: LowerCtx<I = Inst>>(
             let rd = get_output_reg(ctx, outputs[0]);
             lower_constant_f64(ctx, rd, value);
         }
-        Opcode::Iadd | Opcode::IaddDIT => {
+        Opcode::Iadd => {
             let rd = get_output_reg(ctx, outputs[0]);
             let ty = ty.unwrap();
             if !ty.is_vector() {

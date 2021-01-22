@@ -1003,7 +1003,7 @@ pub fn translate_operator<FE: FuncEnvironment + ?Sized>(
         }
         Operator::S32Add | Operator::S64Add => {
             let (arg1, arg2) = state.pop2();
-            state.push1(builder.ins().iaddDIT(arg1, arg2));
+            state.push1(builder.ins().iadd(arg1, arg2));
         }
         Operator::S32And | Operator::S64And => {
             let (arg1, arg2) = state.pop2();

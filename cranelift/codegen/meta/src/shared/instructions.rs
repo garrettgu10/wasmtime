@@ -2327,21 +2327,6 @@ pub(crate) fn define(
 
     ig.push(
         Inst::new(
-            "iaddDIT",
-            r#"
-        Wrapping integer addition: `a := x + y \pmod{2^B}`.
-
-        This instruction does not depend on the signed/unsigned interpretation
-        of the operands.
-        "#,
-            &formats.binary,
-        )
-        .operands_in(vec![x, y])
-        .operands_out(vec![a]),
-    );
-
-    ig.push(
-        Inst::new(
             "uadd_sat",
             r#"
         Add with unsigned saturation.
