@@ -54,7 +54,7 @@ impl<'a> TypeSectionReader<'a> {
     pub fn read(&mut self) -> Result<TypeDef<'a>> {
         Ok(match self.reader.read_u8()? {
             0x5f => TypeDef::Func(self.reader.read_func_type(false)?),
-            0x60 => TypeDef::Func(self.reader.read_func_type(true)?),
+            0x63 => TypeDef::Func(self.reader.read_func_type(true)?),
             0x61 => TypeDef::Module(self.reader.read_module_type()?),
             0x62 => TypeDef::Instance(self.reader.read_instance_type()?),
             _ => {

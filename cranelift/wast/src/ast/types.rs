@@ -10,6 +10,8 @@ pub enum ValType<'a> {
     I64,
     F32,
     F64,
+    S32,
+    S64,
     V128,
     Ref(RefType<'a>),
     Rtt(u32, ast::Index<'a>),
@@ -30,6 +32,12 @@ impl<'a> Parse<'a> for ValType<'a> {
         } else if l.peek::<kw::f64>() {
             parser.parse::<kw::f64>()?;
             Ok(ValType::F64)
+        } else if l.peek::<kw::s32>() {
+            parser.parse::<kw::s32>()?;
+            Ok(ValType::S32)
+        } else if l.peek::<kw::s64>() {
+            parser.parse::<kw::s64>()?;
+            Ok(ValType::S64)
         } else if l.peek::<kw::v128>() {
             parser.parse::<kw::v128>()?;
             Ok(ValType::V128)
@@ -57,6 +65,8 @@ impl<'a> Peek for ValType<'a> {
             || kw::i64::peek(cursor)
             || kw::f32::peek(cursor)
             || kw::f64::peek(cursor)
+            || kw::s32::peek(cursor)
+            || kw::s64::peek(cursor)
             || kw::v128::peek(cursor)
             || (ast::LParen::peek(cursor) && kw::rtt::peek2(cursor))
             || RefType::peek(cursor)
@@ -384,6 +394,8 @@ pub enum MemoryType {
         limits: Limits,
         /// Whether or not this is a shared (atomic) memory type
         shared: bool,
+        /// Whether or not this is a secret memory type
+        secret: bool,
     },
     /// A 64-bit memory
     B64 {
@@ -391,21 +403,24 @@ pub enum MemoryType {
         limits: Limits64,
         /// Whether or not this is a shared (atomic) memory type
         shared: bool,
+        /// Whether or not this is a secret memory type
+        secret: bool,
     },
 }
 
 impl<'a> Parse<'a> for MemoryType {
     fn parse(parser: Parser<'a>) -> Result<Self> {
+        let secret = parser.parse::<Option<kw::secret>>()?.is_some();
         if parser.peek::<kw::i64>() {
             parser.parse::<kw::i64>()?;
             let limits = parser.parse()?;
             let shared = parser.parse::<Option<kw::shared>>()?.is_some();
-            Ok(MemoryType::B64 { limits, shared })
+            Ok(MemoryType::B64 { limits, shared, secret })
         } else {
             parser.parse::<Option<kw::i32>>()?;
             let limits = parser.parse()?;
             let shared = parser.parse::<Option<kw::shared>>()?.is_some();
-            Ok(MemoryType::B32 { limits, shared })
+            Ok(MemoryType::B32 { limits, shared, secret })
         }
     }
 }
@@ -413,6 +428,9 @@ impl<'a> Parse<'a> for MemoryType {
 /// A function type with parameters and results.
 #[derive(Clone, Debug, Default)]
 pub struct FunctionType<'a> {
+    /// Whether or not the function is trusted (ct-wasm)
+    pub trusted: bool,
+
     /// The parameters of a function, optionally each having an identifier for
     /// name resolution and a name for the custom `name` section.
     pub params: Box<
@@ -474,9 +492,18 @@ impl<'a> FunctionType<'a> {
 
 impl<'a> Parse<'a> for FunctionType<'a> {
     fn parse(parser: Parser<'a>) -> Result<Self> {
+
+        let has_untrusted_kw = parser.parse::<Option<kw::untrusted>>()?.is_some();
+        let has_trusted_kw = parser.parse::<Option<kw::trusted>>()?.is_some();
+
+        if has_untrusted_kw && has_trusted_kw {
+            return Err(parser.error("function cannot be both trusted and untrusted"));
+        }
+
         let mut ret = FunctionType {
             params: Box::new([]),
             results: Box::new([]),
+            trusted: !has_untrusted_kw, //functions are trusted by default
         };
         ret.finish_parse(true, parser)?;
         Ok(ret)
@@ -485,6 +512,9 @@ impl<'a> Parse<'a> for FunctionType<'a> {
 
 impl<'a> Peek for FunctionType<'a> {
     fn peek(cursor: Cursor<'_>) -> bool {
+        if kw::untrusted::peek(cursor) { return true; }
+        if kw::trusted::peek(cursor) { return true; }
+
         if let Some(next) = cursor.lparen() {
             match next.keyword() {
                 Some(("param", _)) | Some(("result", _)) => return true,
@@ -509,6 +539,7 @@ impl<'a> Parse<'a> for FunctionTypeNoNames<'a> {
         let mut ret = FunctionType {
             params: Box::new([]),
             results: Box::new([]),
+            trusted: true,
         };
         ret.finish_parse(false, parser)?;
         Ok(FunctionTypeNoNames(ret))

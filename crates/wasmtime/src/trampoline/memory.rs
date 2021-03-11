@@ -20,6 +20,7 @@ pub fn create_handle_with_memory(
         minimum: memory.limits().min(),
         maximum: memory.limits().max(),
         shared: false, // TODO
+        secret: false, // TODO
     };
 
     let memory_plan =

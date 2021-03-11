@@ -230,6 +230,8 @@ pub struct Memory {
     pub maximum: Option<u32>,
     /// Whether the memory may be shared between multiple threads.
     pub shared: bool,
+    /// Whether the memory represents a ct-wasm "secret" memory
+    pub secret: bool,
 }
 
 /// WebAssembly event.
@@ -248,6 +250,8 @@ pub fn type_to_type<PE: TargetEnvironment + ?Sized>(
     match ty {
         wasmparser::Type::I32 => Ok(ir::types::I32),
         wasmparser::Type::I64 => Ok(ir::types::I64),
+        wasmparser::Type::S32 => Ok(ir::types::I32),
+        wasmparser::Type::S64 => Ok(ir::types::I64),
         wasmparser::Type::F32 => Ok(ir::types::F32),
         wasmparser::Type::F64 => Ok(ir::types::F64),
         wasmparser::Type::V128 => Ok(ir::types::I8X16),
@@ -267,6 +271,8 @@ pub fn tabletype_to_type<PE: TargetEnvironment + ?Sized>(
     match ty {
         wasmparser::Type::I32 => Ok(Some(ir::types::I32)),
         wasmparser::Type::I64 => Ok(Some(ir::types::I64)),
+        wasmparser::Type::S32 => Ok(Some(ir::types::I32)),
+        wasmparser::Type::S64 => Ok(Some(ir::types::I64)),
         wasmparser::Type::F32 => Ok(Some(ir::types::F32)),
         wasmparser::Type::F64 => Ok(Some(ir::types::F64)),
         wasmparser::Type::V128 => Ok(Some(ir::types::I8X16)),
@@ -296,6 +302,8 @@ where
                 match ty {
                     wasmparser::Type::I32 => (&[], &[wasmparser::Type::I32]),
                     wasmparser::Type::I64 => (&[], &[wasmparser::Type::I64]),
+                    wasmparser::Type::S32 => (&[], &[wasmparser::Type::I32]),
+                    wasmparser::Type::S64 => (&[], &[wasmparser::Type::I64]),
                     wasmparser::Type::F32 => (&[], &[wasmparser::Type::F32]),
                     wasmparser::Type::F64 => (&[], &[wasmparser::Type::F64]),
                     wasmparser::Type::V128 => (&[], &[wasmparser::Type::V128]),
@@ -335,6 +343,12 @@ pub fn block_with_params<PE: TargetEnvironment + ?Sized>(
                 builder.append_block_param(block, ir::types::I32);
             }
             wasmparser::Type::I64 => {
+                builder.append_block_param(block, ir::types::I64);
+            }
+            wasmparser::Type::S32 => {
+                builder.append_block_param(block, ir::types::I32);
+            }
+            wasmparser::Type::S64 => {
                 builder.append_block_param(block, ir::types::I64);
             }
             wasmparser::Type::F32 => {

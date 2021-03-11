@@ -415,7 +415,7 @@ dependencies = [
  "souper-ir",
  "target-lexicon",
  "thiserror",
- "wast 28.0.0",
+ "wast 27.0.0",
 ]
 
 [[package]]
@@ -1520,7 +1520,7 @@ dependencies = [
  "peepmatic-test-operator",
  "peepmatic-traits",
  "serde",
- "wast 28.0.0",
+ "wast 27.0.0",
  "z3",
 ]
 
@@ -1548,7 +1548,7 @@ dependencies = [
  "peepmatic-traits",
  "rand",
  "serde",
- "wast 28.0.0",
+ "wast 27.0.0",
 ]
 
 [[package]]
@@ -1573,7 +1573,7 @@ dependencies = [
  "serde",
  "serde_test",
  "thiserror",
- "wast 28.0.0",
+ "wast 27.0.0",
 ]
 
 [[package]]
@@ -1585,7 +1585,7 @@ dependencies = [
  "peepmatic",
  "peepmatic-test-operator",
  "souper-ir",
- "wast 28.0.0",
+ "wast 27.0.0",
 ]
 
 [[package]]
@@ -1606,7 +1606,7 @@ version = "0.68.0"
 dependencies = [
  "peepmatic-traits",
  "serde",
- "wast 28.0.0",
+ "wast 27.0.0",
 ]
 
 [[package]]
@@ -2744,7 +2744,7 @@ dependencies = [
  "wasmtime-wasi",
  "wasmtime-wasi-nn",
  "wasmtime-wast",
- "wat 1.0.29",
+ "wat 1.0.28",
 ]
 
 [[package]]
@@ -2842,6 +2842,7 @@ dependencies = [
  "rayon",
  "region",
  "serde",
+ "serde_json",
  "target-lexicon",
  "thiserror",
  "wasmparser 0.68.0",
@@ -2968,7 +2969,7 @@ version = "0.21.0"
 dependencies = [
  "anyhow",
  "wasmtime",
- "wast 28.0.0",
+ "wast 27.0.0",
 ]
 
 [[package]]

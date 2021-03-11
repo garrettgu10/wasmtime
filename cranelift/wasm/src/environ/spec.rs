@@ -102,6 +102,8 @@ pub struct WasmFuncType {
     pub params: Box<[WasmType]>,
     /// Returns params types.
     pub returns: Box<[WasmType]>,
+    /// ct-wasm: whether this function is marked as "trusted"
+    pub trusted: bool,
 }
 
 impl TryFrom<wasmparser::FuncType> for WasmFuncType {
@@ -120,6 +122,7 @@ impl TryFrom<wasmparser::FuncType> for WasmFuncType {
                 .into_iter()
                 .map(WasmType::try_from)
                 .collect::<Result<_, Self::Error>>()?,
+            trusted: ty.trusted,
         })
     }
 }

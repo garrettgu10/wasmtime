@@ -5,6 +5,9 @@ use crate::object::{build_object, ObjectUnwindInfo};
 use object::write::Object;
 #[cfg(feature = "parallel-compilation")]
 use rayon::prelude::*;
+use serde_json::json;
+use serde::Serialize;
+use cranelift_wasm::{GlobalIndex, FuncIndex, WasmType};
 use std::hash::{Hash, Hasher};
 use std::mem;
 use wasmparser::WasmFeatures;
@@ -102,6 +105,23 @@ pub struct Compilation {
     pub funcs: CompiledFunctions,
 }
 
+#[allow(missing_docs)]
+#[derive(Serialize)]
+struct CtWasmMemorySig {
+    secret: bool,
+    imported: bool,
+}
+
+#[allow(missing_docs)]
+#[derive(Serialize)]
+struct CtWasmFunctionSig {
+    trusted: bool,
+    #[serde(rename = "paramSecrecy")]
+    param_secrecy: Vec<bool>,
+    #[serde(rename = "returnSecrecy")]
+    return_secrecy: Vec<bool>,
+}
+
 impl Compiler {
     /// Return the isa.
     pub fn isa(&self) -> &dyn TargetIsa {
@@ -121,6 +141,78 @@ impl Compiler {
     /// Return the enabled wasm features.
     pub fn features(&self) -> &WasmFeatures {
         &self.features
+    }
+
+    fn gen_vmoffsets_info(
+        vmoff: &VMOffsets,
+        module: &Module,
+        types: &TypeTables,
+    ) -> Vec<u8> {
+        let mut globals: Vec<bool> = Vec::with_capacity(module.globals.len());
+        let mut memories: Vec<CtWasmMemorySig> = Vec::with_capacity(module.memory_plans.len());
+        let mut functions: Vec<CtWasmFunctionSig> = Vec::with_capacity(module.functions.len());
+
+        for i in 0..module.globals.len() as u32 {
+            let index = GlobalIndex::from_u32(i);
+            globals.push(match module.globals[index].wasm_ty {
+                WasmType::S32 => true,
+                WasmType::S64 => true,
+                _ => false
+            })
+        }
+
+        for i in 0..module.memory_plans.len() as u32 {
+            let index = MemoryIndex::from_u32(i);
+            let memory = &module.memory_plans[index].memory;
+            memories.push(CtWasmMemorySig {
+                secret: memory.secret,
+                imported: module.is_imported_memory(index),
+            });
+        }
+
+        for i in 0..module.functions.len() as u32 {
+            let func_index = FuncIndex::from_u32(i);
+            let sig_index = module.functions[func_index];
+
+            let signature = &types.wasm_signatures[sig_index];
+            let mut param_secrecy : Vec<bool> = Vec::with_capacity(signature.params.len());
+            for param in signature.params.iter() {
+                param_secrecy.push(match param {
+                    WasmType::S32 => true,
+                    WasmType::S64 => true,
+                    _ => false
+                })
+            }
+            let mut return_secrecy : Vec<bool> = Vec::with_capacity(signature.returns.len());
+            for ret in signature.returns.iter() {
+                return_secrecy.push(match ret {
+                    WasmType::S32 => true,
+                    WasmType::S64 => true,
+                    _ => false
+                })
+            }
+
+            let trusted = signature.trusted;
+
+            functions.push(CtWasmFunctionSig {
+                param_secrecy,
+                return_secrecy,
+                trusted,
+            })
+        }
+
+        let json = json!({
+            "globalsOffset": vmoff.vmctx_globals_begin(),
+            "globalsSecrecy": globals,
+            "memoriesOffset": vmoff.vmctx_imported_memories_begin(),
+            "memories": memories,
+            "functions": functions,
+        });
+
+        let mut res = json.to_string();
+        res.push_str("                    "); //add some extra padding to the json section so we can mess with it for testing later
+        
+        res.into_bytes()
     }
 
     /// Compile the given function bodies.
@@ -146,7 +238,7 @@ impl Compiler {
             .into_iter()
             .collect::<CompiledFunctions>();
 
-        let dwarf_sections = if self.tunables.generate_native_debuginfo && !funcs.is_empty() {
+        let mut dwarf_sections = if self.tunables.generate_native_debuginfo && !funcs.is_empty() {
             transform_dwarf_data(
                 &*self.isa,
                 &translation.module,
@@ -156,6 +248,16 @@ impl Compiler {
         } else {
             vec![]
         };
+
+        let offsets = VMOffsets::new(self.isa.frontend_config().pointer_bytes(), &translation.module);
+
+        let name = ".vmcontext_offsets";
+        let body = Compiler::gen_vmoffsets_info(&offsets, &translation.module, &types);
+        let relocs = vec![];
+
+        dwarf_sections.push(DwarfSection {
+            name, body, relocs
+        });
 
         let (obj, unwind_info) =
             build_object(&*self.isa, &translation, types, &funcs, dwarf_sections)?;

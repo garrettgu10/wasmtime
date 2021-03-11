@@ -70,6 +70,7 @@ pub fn run(fields: &mut Vec<ModuleField>) {
                                     max: Some(pages),
                                 },
                                 shared: false,
+                                secret: false,
                             }
                         } else {
                             MemoryType::B64 {
@@ -78,6 +79,7 @@ pub fn run(fields: &mut Vec<ModuleField>) {
                                     max: Some(u64::from(pages)),
                                 },
                                 shared: false,
+                                secret: false,
                             }
                         });
                         let data = match mem::replace(&mut m.kind, kind) {

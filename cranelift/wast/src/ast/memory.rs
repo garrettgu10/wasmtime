@@ -71,7 +71,7 @@ impl<'a> Parse<'a> for Memory<'a> {
                 Ok(data)
             })?;
             MemoryKind::Inline { data, is_32 }
-        } else if l.peek::<u32>() || l.peek::<kw::i32>() || l.peek::<kw::i64>() {
+        } else if l.peek::<kw::secret>() || l.peek::<u32>() || l.peek::<kw::i32>() || l.peek::<kw::i64>() {
             MemoryKind::Normal(parser.parse()?)
         } else {
             return Err(l.error());

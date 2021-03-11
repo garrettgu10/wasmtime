@@ -411,6 +411,11 @@ pub mod kw {
     custom_keyword!(result);
     custom_keyword!(rtt);
     custom_keyword!(shared);
+    custom_keyword!(secret);
+    custom_keyword!(untrusted);
+    custom_keyword!(trusted);
+    custom_keyword!(s32);
+    custom_keyword!(s64);
     custom_keyword!(start);
     custom_keyword!(r#struct = "struct");
     custom_keyword!(table);

@@ -673,7 +673,7 @@ impl Validator {
 
     fn memory_type(&self, ty: &MemoryType) -> Result<()> {
         match ty {
-            MemoryType::M32 { limits, shared } => {
+            MemoryType::M32 { limits, shared, secret } => {
                 self.limits(limits)?;
                 let initial = limits.initial;
                 if initial as usize > MAX_WASM_MEMORY_PAGES {
@@ -692,8 +692,13 @@ impl Validator {
                         return self.create_error("shared memory must have maximum size");
                     }
                 }
+                if *secret {
+                    if !self.features.constant_time {
+                        return self.create_error("ct-wasm must be enabled for secret memories");
+                    }
+                }
             }
-            MemoryType::M64 { limits, shared } => {
+            MemoryType::M64 { limits, shared, secret } => {
                 if !self.features.memory64 {
                     return self.create_error("memory64 must be enabled for 64-bit memories");
                 }
@@ -713,6 +718,11 @@ impl Validator {
                     }
                     if limits.maximum.is_none() {
                         return self.create_error("shared memory must have maximum size");
+                    }
+                }
+                if *secret {
+                    if !self.features.constant_time {
+                        return self.create_error("ct-wasm must be enabled for secret memories");
                     }
                 }
             }
@@ -1066,11 +1076,11 @@ impl Validator {
                     (
                         MemoryType::M32 {
                             limits: a,
-                            shared: ash,
+                            shared: ash, ..
                         },
                         MemoryType::M32 {
                             limits: b,
-                            shared: bsh,
+                            shared: bsh, ..
                         },
                     ) => {
                         if limits_match!(a, b) && ash == bsh {
@@ -1080,11 +1090,11 @@ impl Validator {
                     (
                         MemoryType::M64 {
                             limits: a,
-                            shared: ash,
+                            shared: ash, ..
                         },
                         MemoryType::M64 {
                             limits: b,
-                            shared: bsh,
+                            shared: bsh, ..
                         },
                     ) => {
                         if limits_match!(a, b) && ash == bsh {

@@ -728,6 +728,7 @@ impl<'a> Resolver<'a> {
                         .iter()
                         .map(|ty| self.copy_valtype_from_module(span, child, *ty))
                         .collect::<Result<Box<[_]>, Error>>()?,
+                    key.2
                 );
                 Item::Func(self.modules[self.cur].key_to_idx(span, my_key))
             }
@@ -816,7 +817,7 @@ impl<'a> Resolver<'a> {
         ty: ValType<'a>,
     ) -> Result<ValType<'a>, Error> {
         match ty {
-            ValType::I32 | ValType::I64 | ValType::F32 | ValType::F64 | ValType::V128 => Ok(ty),
+            ValType::I32 | ValType::I64 | ValType::F32 | ValType::F64 | ValType::S32 | ValType::S64 | ValType::V128 => Ok(ty),
 
             ValType::Ref(ty) => Ok(ValType::Ref(
                 self.copy_reftype_from_module(span, child, ty)?,
@@ -1362,7 +1363,7 @@ impl<'a> Module<'a> {
                         for (id, _, _) in inline.params.iter() {
                             scope.register(*id, "local")?;
                         }
-                    } else if let Some(TypeInfo::Func((params, _))) =
+                    } else if let Some(TypeInfo::Func((params, _, _))) =
                         self.types.items.get(n as usize).and_then(|i| i.item())
                     {
                         for _ in 0..params.len() {
@@ -2164,7 +2165,7 @@ trait TypeKey<'a> {
     fn into_info(self, span: Span, cur: usize) -> TypeInfo<'a>;
 }
 
-type FuncKey<'a> = (Box<[ValType<'a>]>, Box<[ValType<'a>]>);
+type FuncKey<'a> = (Box<[ValType<'a>]>, Box<[ValType<'a>]>, bool);
 
 impl<'a> TypeReference<'a> for FunctionType<'a> {
     type Key = FuncKey<'a>;
@@ -2172,7 +2173,8 @@ impl<'a> TypeReference<'a> for FunctionType<'a> {
     fn key(&self) -> Self::Key {
         let params = self.params.iter().map(|p| p.2).collect();
         let results = self.results.clone();
-        (params, results)
+        let trusted = self.trusted;
+        (params, results, trusted)
     }
 
     fn expand(&mut self, _cx: &mut Module<'a>) {}
@@ -2182,7 +2184,7 @@ impl<'a> TypeReference<'a> for FunctionType<'a> {
             Index::Num(n, _) => *n,
             Index::Id(_) => panic!("expected `Num`"),
         };
-        let (params, results) = match cx.types.items.get(n as usize).and_then(|i| i.item()) {
+        let (params, results, trusted) = match cx.types.items.get(n as usize).and_then(|i| i.item()) {
             Some(TypeInfo::Func(ty)) => ty,
             _ => return Ok(()),
         };
@@ -2210,7 +2212,8 @@ impl<'a> TypeReference<'a> for FunctionType<'a> {
             || results
                 .iter()
                 .zip(self.results.iter())
-                .any(|(a, b)| types_not_equal(a, b));
+                .any(|(a, b)| types_not_equal(a, b))
+            || *trusted != self.trusted;
         if not_equal {
             return Err(Error::new(
                 idx.span(),
@@ -2242,6 +2245,7 @@ impl<'a> TypeKey<'a> for FuncKey<'a> {
         TypeDef::Func(FunctionType {
             params: self.0.iter().map(|t| (None, None, *t)).collect(),
             results: self.1.clone(),
+            trusted: self.2,
         })
     }
 

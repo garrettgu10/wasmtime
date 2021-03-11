@@ -311,7 +311,7 @@ impl Encode for Type<'_> {
     fn encode(&self, e: &mut Vec<u8>) {
         match &self.def {
             TypeDef::Func(func) => {
-                e.push(0x60);
+                e.push(if func.trusted { 0x60 } else { 0x63 });
                 func.encode(e)
             }
             TypeDef::Struct(r#struct) => {
@@ -355,6 +355,8 @@ impl<'a> Encode for ValType<'a> {
             ValType::F32 => e.push(0x7d),
             ValType::F64 => e.push(0x7c),
             ValType::V128 => e.push(0x7b),
+            ValType::S32 => e.push(0x7a),
+            ValType::S64 => e.push(0x79),
             ValType::Rtt(depth, index) => {
                 e.push(0x69);
                 depth.encode(e);
@@ -537,20 +539,22 @@ impl Encode for Limits {
 impl Encode for MemoryType {
     fn encode(&self, e: &mut Vec<u8>) {
         match self {
-            MemoryType::B32 { limits, shared } => {
+            MemoryType::B32 { limits, shared, secret } => {
                 let flag_max = limits.max.is_some() as u8;
                 let flag_shared = *shared as u8;
-                let flags = flag_max | (flag_shared << 1);
+                let flag_secret = *secret as u8;
+                let flags = flag_max | (flag_shared << 1) | (flag_secret << 3);
                 e.push(flags);
                 limits.min.encode(e);
                 if let Some(max) = limits.max {
                     max.encode(e);
                 }
             }
-            MemoryType::B64 { limits, shared } => {
+            MemoryType::B64 { limits, shared, secret } => {
                 let flag_max = limits.max.is_some() as u8;
                 let flag_shared = *shared as u8;
-                let flags = flag_max | (flag_shared << 1) | 0x04;
+                let flag_secret = *secret as u8;
+                let flags = flag_max | (flag_shared << 1) | 0x04 | (flag_secret << 3);
                 e.push(flags);
                 limits.min.encode(e);
                 if let Some(max) = limits.max {

@@ -292,6 +292,7 @@ impl FuncType {
             sig: WasmFuncType {
                 params: params.into_iter().map(|t| t.to_wasm_type()).collect(),
                 returns: results.into_iter().map(|t| t.to_wasm_type()).collect(),
+                trusted: true,
             },
         }
     }

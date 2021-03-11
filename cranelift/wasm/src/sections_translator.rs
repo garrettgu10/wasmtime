@@ -56,10 +56,11 @@ fn entity_type(
 
 fn memory(ty: MemoryType) -> Memory {
     match ty {
-        MemoryType::M32 { limits, shared } => Memory {
+        MemoryType::M32 { limits, shared, secret } => Memory {
             minimum: limits.initial,
             maximum: limits.maximum,
             shared: shared,
+            secret: secret,
         },
         // FIXME(#2361)
         MemoryType::M64 { .. } => unimplemented!(),

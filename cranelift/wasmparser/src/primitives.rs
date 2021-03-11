@@ -218,10 +218,12 @@ pub enum MemoryType {
     M32 {
         limits: ResizableLimits,
         shared: bool,
+        secret: bool,
     },
     M64 {
         limits: ResizableLimits64,
         shared: bool,
+        secret: bool,
     },
 }
 

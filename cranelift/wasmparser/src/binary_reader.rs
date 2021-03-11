@@ -357,7 +357,7 @@ impl<'a> BinaryReader<'a> {
     pub(crate) fn read_memory_type(&mut self) -> Result<MemoryType> {
         let pos = self.original_position();
         let flags = self.read_u8()?;
-        if (flags & !0x7) != 0 {
+        if (flags & !0xf) != 0 {
             return Err(BinaryReaderError::new(
                 "invalid table resizable limits flags",
                 pos,
@@ -366,11 +366,13 @@ impl<'a> BinaryReader<'a> {
         if flags & 0x4 == 0 {
             let limits = self.read_resizable_limits((flags & 0x1) != 0)?;
             let shared = (flags & 0x2) != 0;
-            Ok(MemoryType::M32 { limits, shared })
+            let secret = (flags & 0x8) != 0;
+            Ok(MemoryType::M32 { limits, shared, secret })
         } else {
             let limits = self.read_resizable_limits64((flags & 0x1) != 0)?;
             let shared = (flags & 0x2) != 0;
-            Ok(MemoryType::M64 { limits, shared })
+            let secret = (flags & 0x8) != 0;
+            Ok(MemoryType::M64 { limits, shared, secret })
         }
     }
 
