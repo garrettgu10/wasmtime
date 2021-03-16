@@ -2661,7 +2661,7 @@ dependencies = [
  "wasmtime-profiling",
  "wasmtime-runtime",
  "wasmtime-wasi",
- "wat 1.0.29",
+ "wat 1.0.28",
  "winapi",
 ]
 
