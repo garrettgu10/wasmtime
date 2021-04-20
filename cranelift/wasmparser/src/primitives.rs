@@ -536,6 +536,8 @@ pub enum Operator<'a> {
 
     // 0xFB operators
     // CT-Wasm extension
+    SSelect,
+    STypedSelect { ty: Type },
     S32Load { memarg: MemoryImmediate },
     S64Load { memarg: MemoryImmediate },
     S32Load8S { memarg: MemoryImmediate },

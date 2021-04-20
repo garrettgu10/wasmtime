@@ -1733,6 +1733,21 @@ pub(crate) fn define(
         .operands_out(vec![a]),
     );
 
+    ig.push(
+        Inst::new(
+            "sselect",
+            r#"
+        Conditional secret select.
+
+        This instruction selects whole values. Use `vselect` for
+        lane-wise selection.
+        "#,
+            &formats.ternary,
+        )
+        .operands_in(vec![c, x, y])
+        .operands_out(vec![a]),
+    );
+
     let cc = &Operand::new("cc", &imm.intcc).with_doc("Controlling condition code");
     let flags = &Operand::new("flags", iflags).with_doc("The machine's flag register");
 

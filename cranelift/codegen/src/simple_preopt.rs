@@ -904,6 +904,9 @@ mod simplify {
             }
 
             InstructionData::IntCompare { opcode, cond, args } => {
+                if opcode == Opcode::IcmpDIT {
+                    return;
+                }
                 debug_assert_eq!(opcode, Opcode::Icmp);
                 if let Some(imm) = resolve_imm64_value(&pos.func.dfg, args[1]) {
                     if pos.func.dfg.ctrl_typevar(inst).bytes() <= native_word_width {

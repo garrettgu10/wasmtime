@@ -211,6 +211,17 @@ pub fn translate_operator<FE: FuncEnvironment + ?Sized>(
             let (arg1, arg2, cond) = state.pop3();
             state.push1(builder.ins().select(cond, arg1, arg2));
         }
+        Operator::SSelect => {
+            let (arg1, arg2, cond) = state.pop3();
+            state.push1(builder.ins().sselect(cond, arg1, arg2));
+        }
+        Operator::STypedSelect { ty: _ } => {
+            // We ignore the explicit type parameter as it is only needed for
+            // validation, which we require to have been performed before
+            // translation.
+            let (arg1, arg2, cond) = state.pop3();
+            state.push1(builder.ins().sselect(cond, arg1, arg2));
+        }
         Operator::Nop => {
             // We do nothing
         }

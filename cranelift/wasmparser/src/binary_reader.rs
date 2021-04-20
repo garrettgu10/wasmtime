@@ -859,6 +859,19 @@ impl<'a> BinaryReader<'a> {
     fn read_0xfb_operator(&mut self) -> Result<Operator<'a>> {
         let code = self.read_u8()? as u8;
         Ok(match code {
+            0x1b => Operator::SSelect,
+            0x1c => {
+                let results = self.read_var_u32()?;
+                if results != 1 {
+                    return Err(BinaryReaderError::new(
+                        "invalid result arity",
+                        self.position,
+                    ));
+                }
+                Operator::STypedSelect {
+                    ty: self.read_type()?,
+                }
+            }
             0x28 => Operator::S32Load {
                 memarg: self.read_memarg()?,
             },

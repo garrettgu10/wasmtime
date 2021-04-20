@@ -2084,7 +2084,17 @@ impl MachInstEmit for Inst {
                 sink.put4(enc_jump26(0b000101, dest.as_offset26_or_zero()));
             }
             &Inst::Ret => {
+                sink.put4(0xd50323bf); //autiasp
                 sink.put4(0xd65f03c0);
+            }
+            &Inst::PaciaSP => {
+                sink.put4(0xd503233f);
+            }
+            &Inst::AutiaSP => {
+                sink.put4(0xd50323bf);
+            }
+            &Inst::RetAA => {
+                sink.put4 (0xd65f0bff);
             }
             &Inst::EpiloguePlaceholder => {
                 // Noop; this is just a placeholder for epilogues.

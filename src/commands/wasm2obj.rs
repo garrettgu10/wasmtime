@@ -68,8 +68,8 @@ impl WasmToObjCommand {
             self.target.as_ref(),
             strategy,
             self.common.enable_simd,
-            wasmtime::OptLevel::SpeedAndSize,
-            true,
+            self.common.opt_level(),
+            self.common.debug_info,
         )?;
 
         let mut file =

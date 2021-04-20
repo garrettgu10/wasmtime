@@ -1090,6 +1090,9 @@ pub enum Inst {
     // ---- branches (exactly one must appear at end of BB) ----
     /// A machine return instruction.
     Ret,
+    PaciaSP,
+    AutiaSP,
+    RetAA,
 
     /// A placeholder instruction, generating no code, meaning that a function epilogue must be
     /// inserted there.
@@ -1970,7 +1973,7 @@ fn aarch64_get_regs(inst: &Inst, collector: &mut RegUsageCollector) {
             collector.add_def(rd);
             collector.add_use(rn);
         }
-        &Inst::Jump { .. } | &Inst::Ret | &Inst::EpiloguePlaceholder => {}
+        &Inst::Jump { .. } | &Inst::Ret | &Inst::EpiloguePlaceholder | &Inst::PaciaSP | &Inst::AutiaSP | &Inst::RetAA => {}
         &Inst::Call { ref info, .. } => {
             collector.add_uses(&*info.uses);
             collector.add_defs(&*info.defs);
@@ -2721,7 +2724,7 @@ fn aarch64_map_regs<RUM: RegUsageMapper>(inst: &mut Inst, mapper: &RUM) {
                 map_def(mapper, r);
             }
         }
-        &mut Inst::Ret | &mut Inst::EpiloguePlaceholder => {}
+        &mut Inst::Ret | &mut Inst::EpiloguePlaceholder | &mut Inst::RetAA | &mut Inst::AutiaSP | &mut Inst::PaciaSP => {}
         &mut Inst::CallInd { ref mut info, .. } => {
             for r in info.uses.iter_mut() {
                 map_use(mapper, r);
@@ -3889,6 +3892,9 @@ impl Inst {
                 format!("blr {}", rn)
             }
             &Inst::Ret => "ret".to_string(),
+            &Inst::PaciaSP => "paciasp".to_string(),
+            &Inst::AutiaSP => "autiasp".to_string(),
+            &Inst::RetAA => "retaa".to_string(),
             &Inst::EpiloguePlaceholder => "epilogue placeholder".to_string(),
             &Inst::Jump { ref dest } => {
                 let dest = dest.show_rru(mb_rru);

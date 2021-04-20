@@ -345,6 +345,10 @@ impl ABIMachineSpec for AArch64MachineDeps {
         Inst::Ret
     }
 
+    fn gen_paciasp() -> Inst {
+        Inst::PaciaSP
+    }
+
     fn gen_add_imm(into_reg: Writable<Reg>, from_reg: Reg, imm: u32) -> SmallVec<[Inst; 4]> {
         let imm = imm as u64;
         let mut insts = SmallVec::new();

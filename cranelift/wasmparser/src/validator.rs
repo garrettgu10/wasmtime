@@ -180,7 +180,7 @@ impl Default for WasmFeatures {
             threads: false,
             tail_call: false,
             bulk_memory: false,
-            multi_memory: false,
+            multi_memory: true,
             exceptions: false,
             memory64: false,
             deterministic_only: cfg!(feature = "deterministic"),

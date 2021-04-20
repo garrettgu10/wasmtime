@@ -1360,7 +1360,7 @@ pub(crate) fn lower_insn_to_regs<C: LowerCtx<I = Inst>>(
             // Nothing.
         }
 
-        Opcode::Select => {
+        Opcode::Select | Opcode::Sselect => {
             let flag_input = inputs[0];
             let cond = if let Some(icmp_insn) =
                 maybe_input_insn_via_conv(ctx, flag_input, Opcode::Icmp, Opcode::Bint)

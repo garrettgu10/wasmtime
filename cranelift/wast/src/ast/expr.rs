@@ -584,6 +584,9 @@ instructions! {
         F64Const(ast::Float64) : [0x44] : "f64.const",
 
         // ct-wasm
+
+        SSelect(SelectTypes<'a>) : [0xfb] : "sselect",
+
         S32Const(i32) : [0xfb, 0x41] : "s32.const",
         S64Const(i64) : [0xfb, 0x42] : "s64.const",
 

@@ -257,6 +257,9 @@ pub trait ABIMachineSpec {
     /// Generate a return instruction.
     fn gen_ret() -> Self::I;
 
+    /// Generates a PACIASP instruction.
+    fn gen_paciasp() -> Self::I;
+
     /// Generate an "epilogue placeholder" instruction, recognized by lowering
     /// when using the Baldrdash ABI.
     fn gen_epilogue_placeholder() -> Self::I;
@@ -953,6 +956,9 @@ impl<M: ABIMachineSpec> ABICallee for ABICalleeImpl<M> {
 
     fn gen_prologue(&mut self) -> Vec<Self::I> {
         let mut insts = vec![];
+
+        insts.push(M::gen_paciasp());
+
         if !self.call_conv.extends_baldrdash() {
             // set up frame
             insts.extend(M::gen_prologue_frame_setup().into_iter());

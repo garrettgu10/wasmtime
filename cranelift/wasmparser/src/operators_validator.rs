@@ -752,6 +752,8 @@ impl OperatorValidator {
                 match self.pop_operand(ty)? {
                     ty @ Some(Type::I32)
                     | ty @ Some(Type::I64)
+                    | ty @ Some(Type::S32)
+                    | ty @ Some(Type::S64)
                     | ty @ Some(Type::F32)
                     | ty @ Some(Type::F64) => self.operands.push(ty),
                     ty @ Some(Type::V128) => {
@@ -764,6 +766,30 @@ impl OperatorValidator {
             }
             Operator::TypedSelect { ty } => {
                 self.pop_operand(Some(Type::I32))?;
+                self.pop_operand(Some(ty))?;
+                self.pop_operand(Some(ty))?;
+                self.push_operand(ty)?;
+            }
+            Operator::SSelect => {
+                self.pop_operand(Some(Type::S32))?;
+                let ty = self.pop_operand(None)?;
+                match self.pop_operand(ty)? {
+                    ty @ Some(Type::I32)
+                    | ty @ Some(Type::I64)
+                    | ty @ Some(Type::S32)
+                    | ty @ Some(Type::S64)
+                    | ty @ Some(Type::F32)
+                    | ty @ Some(Type::F64) => self.operands.push(ty),
+                    ty @ Some(Type::V128) => {
+                        self.check_simd_enabled()?;
+                        self.operands.push(ty)
+                    }
+                    None => self.operands.push(None),
+                    Some(_) => bail_op_err!("type mismatch: select only takes integral types"),
+                }
+            }
+            Operator::STypedSelect { ty } => {
+                self.pop_operand(Some(Type::S32))?;
                 self.pop_operand(Some(ty))?;
                 self.pop_operand(Some(ty))?;
                 self.push_operand(ty)?;
