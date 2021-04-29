@@ -458,6 +458,8 @@ impl OperatorValidator {
             TypeOrFuncType::Type(Type::EmptyBlockType)
             | TypeOrFuncType::Type(Type::I32)
             | TypeOrFuncType::Type(Type::I64)
+            | TypeOrFuncType::Type(Type::S32)
+            | TypeOrFuncType::Type(Type::S64)
             | TypeOrFuncType::Type(Type::F32)
             | TypeOrFuncType::Type(Type::F64) => Ok(()),
             TypeOrFuncType::Type(Type::ExternRef) | TypeOrFuncType::Type(Type::FuncRef) => {
