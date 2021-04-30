@@ -986,7 +986,7 @@ unsafe impl WasmTy for i32 {
     fn matches(mut tys: impl Iterator<Item = ValType>) -> anyhow::Result<()> {
         let next = tys.next();
         ensure!(
-            next == Some(ValType::I32),
+            next == Some(ValType::I32) || next == Some(ValType::S32),
             "Type mismatch, expected i32, got {:?}",
             next
         );
@@ -1068,7 +1068,7 @@ unsafe impl WasmTy for i64 {
     fn matches(mut tys: impl Iterator<Item = ValType>) -> anyhow::Result<()> {
         let next = tys.next();
         ensure!(
-            next == Some(ValType::I64),
+            next == Some(ValType::I64) || next == Some(ValType::S64),
             "Type mismatch, expected i64, got {:?}",
             next
         );
