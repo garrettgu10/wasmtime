@@ -339,6 +339,14 @@ fn optimize_complex_addresses(pos: &mut EncCursor, inst: Inst, isa: &dyn TargetI
                         info.offset,
                     );
                 }
+                Opcode::LoadDIT | Opcode::StoreDIT
+                | Opcode::Uload8DIT | Opcode::Sload8DIT
+                | Opcode::Uload16DIT | Opcode::Sload16DIT
+                | Opcode::Uload32DIT | Opcode::Sload32DIT
+                | Opcode::Istore8DIT | Opcode::Istore16DIT
+                | Opcode::Istore32DIT => {
+                    return;
+                }
                 _ => panic!("Unsupported load or store opcode"),
             },
             InstructionData::BinaryImm64 {

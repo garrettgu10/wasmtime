@@ -41,6 +41,8 @@ pub fn dummy_value(val_ty: ValType) -> Result<Val, Trap> {
     Ok(match val_ty {
         ValType::I32 => Val::I32(0),
         ValType::I64 => Val::I64(0),
+        ValType::S32 => Val::I32(0),
+        ValType::S64 => Val::I64(0),
         ValType::F32 => Val::F32(0),
         ValType::F64 => Val::F64(0),
         ValType::V128 => {
